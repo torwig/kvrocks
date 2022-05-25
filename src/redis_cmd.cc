@@ -1473,7 +1473,7 @@ class CommandPop : public Commander {
     Redis::List list_db(svr->storage_, conn->GetNamespace());
     if (with_count_) {
       std::vector<std::string> elems;
-      rocksdb::Status s = list_db.PopMulti(args_[1], left_, count_, &elems);
+      rocksdb::Status s = list_db.Pop(args_[1], left_, count_, &elems);
       if (!s.ok() && !s.IsNotFound()) {
         return Status(Status::RedisExecErr, s.ToString());
       }
@@ -1483,15 +1483,15 @@ class CommandPop : public Commander {
         *output = Redis::MultiBulkString(elems);
       }
     } else {
-      std::string elem;
-      rocksdb::Status s = list_db.Pop(args_[1], left_, &elem);
+      std::vector<std::string> elems;
+      rocksdb::Status s = list_db.Pop(args_[1], left_, 1, &elems);
       if (!s.ok() && !s.IsNotFound()) {
         return Status(Status::RedisExecErr, s.ToString());
       }
       if (s.IsNotFound()) {
         *output = Redis::NilString();
       } else {
-        *output = Redis::BulkString(elem);
+        *output = Redis::BulkString(elems[0]);
       }
     }
 
@@ -1566,17 +1566,18 @@ class CommandBPop : public Commander {
 
   rocksdb::Status TryPopFromList() {
     Redis::List list_db(svr_->storage_, conn_->GetNamespace());
-    std::string last_key, elem;
+    std::string last_key;
+    std::vector<std::string> elems;
     rocksdb::Status s;
     for (const auto &key : keys_) {
       last_key = key;
-      s = list_db.Pop(key, left_, &elem);
+      s = list_db.Pop(key, left_, 1, &elems);
       if (s.ok() || !s.IsNotFound()) {
         break;
       }
     }
     if (s.ok()) {
-      conn_->Reply(Redis::MultiBulkString({last_key, elem}));
+      conn_->Reply(Redis::MultiBulkString({last_key, elems[0]}));
     } else if (!s.IsNotFound()) {
       conn_->Reply(Redis::Error("ERR " + s.ToString()));
       LOG(ERROR) << "Failed to execute redis command: " << conn_->current_cmd_->GetAttributes()->name
