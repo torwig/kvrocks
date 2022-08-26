@@ -274,13 +274,13 @@ double DecodeDouble(const char *ptr) {
 
 char* EncodeVarint32(char *dst, uint32_t v) {
   // Operate on characters as unsigneds
-  unsigned char* ptr = static_cast<unsigned char*>(dst);
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(dst);
   do {
     *ptr = 0x80 | v;
     v >>= 7, ++ptr;
   } while (v != 0);
   *(ptr - 1) &= 0x7F;
-  return static_cast<char*>(ptr);
+  return reinterpret_cast<char*>(ptr);
 }
 
 void PutVarint32(std::string *dst, uint32_t v) {
