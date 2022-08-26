@@ -280,7 +280,7 @@ char* EncodeVarint32(char *dst, uint32_t v) {
     v >>= 7, ++ptr;
   } while (v != 0);
   *(ptr - 1) &= 0x7F;
-  return ptr;
+  return static_cast<char*>(ptr);
 }
 
 void PutVarint32(std::string *dst, uint32_t v) {
