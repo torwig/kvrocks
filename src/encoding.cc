@@ -272,9 +272,9 @@ double DecodeDouble(const char *ptr) {
   return value;
 }
 
-uint8_t* EncodeVarint32(uint8_t *dst, uint32_t v) {
+char* EncodeVarint32(char *dst, uint32_t v) {
   // Operate on characters as unsigneds
-  uint8_t* ptr = dst;
+  unsigned char* ptr = static_cast<unsigned char>(dst);
   do {
     *ptr = 0x80 | v;
     v >>= 7, ++ptr;
@@ -284,9 +284,9 @@ uint8_t* EncodeVarint32(uint8_t *dst, uint32_t v) {
 }
 
 void PutVarint32(std::string *dst, uint32_t v) {
-  uint8_t buf[5];
-  uint8_t* ptr = EncodeVarint32(buf, v);
-  dst->append(reinterpret_cast<char*>(buf), static_cast<size_t>(ptr - buf));
+  char buf[5];
+  char* ptr = EncodeVarint32(buf, v);
+  dst->append(buf, static_cast<size_t>(ptr - buf));
 }
 
 const char* GetVarint32PtrFallback(const char *p, const char *limit, uint32_t *value) {
