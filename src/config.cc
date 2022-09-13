@@ -53,6 +53,7 @@ configEnum compression_type_enum[] = {
     {"snappy", rocksdb::CompressionType::kSnappyCompression},
     {"lz4", rocksdb::CompressionType::kLZ4Compression},
     {"zstd", rocksdb::CompressionType::kZSTD},
+    {"zlib", rocksdb::CompressionType::kZlibCompression},
     {nullptr, 0}
 };
 
