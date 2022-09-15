@@ -28,13 +28,13 @@ FetchContent_GetProperties(zlib)
 if(NOT zlib_POPULATED)
   FetchContent_Populate(zlib)
 
-  execute_process(COMMAND ${zlib_SOURCE_DIR}/configure --static
-    WORKING_DIRECTORY ${zlib_BINARY_DIR}
-  )
-
   if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     set(APPLE_FLAG "CFLAGS=-isysroot ${CMAKE_OSX_SYSROOT}")
   endif()
+
+  execute_process(COMMAND ${zlib_SOURCE_DIR}/configure ${APPLE_FLAG} --static
+    WORKING_DIRECTORY ${zlib_BINARY_DIR}
+  )
 
   add_custom_target(make_zlib COMMAND make CC=${CMAKE_C_COMPILER} ${APPLE_FLAG}
     WORKING_DIRECTORY ${zlib_BINARY_DIR}
