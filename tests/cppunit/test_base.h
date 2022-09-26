@@ -23,9 +23,10 @@
 #include <gtest/gtest.h>
 #include "redis_db.h"
 #include "redis_hash.h"
+#include "util.h"
 
 class TestBase : public testing::Test {
-protected:
+ protected:
   explicit TestBase() {
     config_ = new Config();
     config_->db_dir = "testsdb";
@@ -37,17 +38,19 @@ protected:
       assert(s.IsOK());
     }
   }
+
   ~TestBase() override {
-    rmdir("testsdb");
+    Util::DestroyDir(rocksdb::Env::Default(), config_->db_dir);
     delete storage_;
     delete config_;
   }
 
-protected:
+ protected:
   Engine::Storage *storage_;
   Config *config_ = nullptr;
   std::string key_;
   std::vector<Slice> fields_;
   std::vector<Slice> values_;
 };
+
 #endif //KVROCKS_TEST_BASE_H

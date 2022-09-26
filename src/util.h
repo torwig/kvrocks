@@ -31,6 +31,8 @@
 #include <memory>
 #include <chrono>
 
+#include <rocksdb/env.h>
+
 #include "status.h"
 #include "solarisfixes.h"
 
@@ -66,8 +68,10 @@ std::vector<std::string> TokenizeRedisProtocol(const std::string &value);
 
 void ThreadSetName(const char *name);
 int aeWait(int fd, int mask, uint64_t milliseconds);
-uint64_t GetTimeStampMS(void);
-uint64_t GetTimeStampUS(void);
+uint64_t GetTimeStampMS();
+uint64_t GetTimeStampUS();
+
+rocksdb::Status DestroyDir(rocksdb::Env *env, const std::string &dir);
 
 // define std::make_unique in c++14
 // refer to https://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique

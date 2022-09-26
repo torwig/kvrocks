@@ -676,16 +676,62 @@ int aeWait(int fd, int mask, uint64_t timeout) {
   }
 }
 
-uint64_t GetTimeStampMS(void) {
+uint64_t GetTimeStampMS() {
   auto tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
   auto ts = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch());
   return ts.count();
 }
 
-uint64_t GetTimeStampUS(void) {
+uint64_t GetTimeStampUS() {
   auto tp = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now());
   auto ts = std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch());
   return ts.count();
+}
+
+rocksdb::Status DestroyDir(rocksdb::Env *env, const std::string &dir) {
+  rocksdb::Status s;
+  if (env->FileExists(dir).IsNotFound()) {
+    return s;
+  }
+
+  std::vector<std::string> files_in_dir;
+  s = env->GetChildren(dir, &files_in_dir);
+  if (s.ok()) {
+    for (auto &file_in_dir : files_in_dir) {
+      std::string path = dir + "/" + file_in_dir;
+      bool is_dir = false;
+      s = env->IsDirectory(path, &is_dir);
+      if (s.ok()) {
+        if (is_dir) {
+          s = DestroyDir(env, path);
+        } else {
+          s = env->DeleteFile(path);
+        }
+      } else if (s.IsNotSupported()) {
+        s = rocksdb::Status::OK();
+      }
+      if (!s.ok()) {
+        // IsDirectory, etc. might not report NotFound
+        if (s.IsNotFound() || env->FileExists(path).IsNotFound()) {
+          // Allow files to be deleted externally
+          s = rocksdb::Status::OK();
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  if (s.ok()) {
+    s = env->DeleteDir(dir);
+    // DeleteDir might or might not report NotFound
+    if (!s.ok() && (s.IsNotFound() || env->FileExists(dir).IsNotFound())) {
+      // Allow to be deleted externally
+      s = rocksdb::Status::OK();
+    }
+  }
+
+  return s;
 }
 
 }  // namespace Util

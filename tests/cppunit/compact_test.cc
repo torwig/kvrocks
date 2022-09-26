@@ -94,4 +94,6 @@ TEST(Compact, Filter) {
   }
 
   db->ReleaseSnapshot(read_options.snapshot);
+
+  Util::DestroyDir(rocksdb::Env::Default(), config.db_dir);
 }
