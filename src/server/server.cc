@@ -461,6 +461,7 @@ void Server::PUnSubscribeChannel(const std::string &pattern, Redis::Connection *
 }
 
 void Server::AddBlockingKey(const std::string &key, Redis::Connection *conn) {
+  LOG(INFO) << "Block on key " << key;
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
   auto iter = blocking_keys_.find(key);
   auto conn_ctx = new ConnContext(conn->Owner(), conn->GetFD());
@@ -476,6 +477,7 @@ void Server::AddBlockingKey(const std::string &key, Redis::Connection *conn) {
 }
 
 void Server::UnBlockingKey(const std::string &key, Redis::Connection *conn) {
+  LOG(INFO) << "Unblocking from key " << key;
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
   auto iter = blocking_keys_.find(key);
   if (iter == blocking_keys_.end()) {
@@ -496,8 +498,11 @@ void Server::UnBlockingKey(const std::string &key, Redis::Connection *conn) {
 
 void Server::BlockOnStreams(const std::vector<std::string> &keys, const std::vector<Redis::StreamEntryID> &entry_ids,
                             Redis::Connection *conn) {
+  LOG(INFO) << "Blocking on streams";
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
+  LOG(INFO) << "Mutex acquired";
   IncrBlockedClientNum();
+  LOG(INFO) << "Blocking client counter incremented";
   for (size_t i = 0; i < keys.size(); ++i) {
     auto consumer = std::make_shared<StreamConsumer>(conn->Owner(), conn->GetFD(), conn->GetNamespace(), entry_ids[i]);
     auto iter = blocked_stream_consumers_.find(keys[i]);
@@ -505,6 +510,7 @@ void Server::BlockOnStreams(const std::vector<std::string> &keys, const std::vec
       std::set<std::shared_ptr<StreamConsumer>> consumers;
       consumers.insert(consumer);
       blocked_stream_consumers_.insert(std::make_pair(keys[i], consumers));
+      LOG(INFO) << "Blocking client for stream " << keys[i] << " added";
     } else {
       iter->second.insert(consumer);
     }
@@ -512,8 +518,11 @@ void Server::BlockOnStreams(const std::vector<std::string> &keys, const std::vec
 }
 
 void Server::UnblockOnStreams(const std::vector<std::string> &keys, Redis::Connection *conn) {
+  LOG(INFO) << "Unblocking from streams";
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
+  LOG(INFO) << "Mutex acquired";
   DecrBlockedClientNum();
+  LOG(INFO) << "Blocked client counter decremented";
   for (const auto &key : keys) {
     auto iter = blocked_stream_consumers_.find(key);
     if (iter == blocked_stream_consumers_.end()) {
@@ -524,6 +533,7 @@ void Server::UnblockOnStreams(const std::vector<std::string> &keys, Redis::Conne
       const auto &consumer = *it;
       if (conn->GetFD() == consumer->fd && conn->Owner() == consumer->owner) {
         iter->second.erase(it);
+        LOG(INFO) << "Unblocked client on stream " << key;
         if (iter->second.empty()) {
           blocked_stream_consumers_.erase(iter);
         }
@@ -534,6 +544,7 @@ void Server::UnblockOnStreams(const std::vector<std::string> &keys, Redis::Conne
 }
 
 void Server::WakeupBlockingConns(const std::string &key, size_t n_conns) {
+  LOG(INFO) << "Waking up blocking connections";
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
   auto iter = blocking_keys_.find(key);
   if (iter == blocking_keys_.end() || iter->second.empty()) {
@@ -552,6 +563,7 @@ void Server::WakeupBlockingConns(const std::string &key, size_t n_conns) {
 }
 
 void Server::OnEntryAddedToStream(const std::string &ns, const std::string &key, const Redis::StreamEntryID &entry_id) {
+  LOG(INFO) << "Entry added to stream " << key;
   std::lock_guard<std::mutex> guard(blocking_keys_mu_);
   auto iter = blocked_stream_consumers_.find(key);
   if (iter == blocked_stream_consumers_.end() || iter->second.empty()) {

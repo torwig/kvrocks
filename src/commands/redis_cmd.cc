@@ -5895,6 +5895,7 @@ class CommandXRevRange : public Commander {
 class CommandXRead : public Commander {
  public:
   Status Parse(const std::vector<std::string> &args) override {
+    LOG(INFO) << "Parsing XREAD command";
     size_t streams_word_idx = 0;
 
     for (size_t i = 1; i < args.size();) {
@@ -5975,6 +5976,7 @@ class CommandXRead : public Commander {
   }
 
   Status Execute(Server *svr, Connection *conn, std::string *output) override {
+    LOG(INFO) << "Executing XREAD command";
     Redis::Stream stream_db(svr->storage_, conn->GetNamespace());
 
     std::vector<Redis::StreamReadResult> results;
@@ -6039,6 +6041,7 @@ class CommandXRead : public Commander {
   }
 
   Status blockingRead(Server *svr, Connection *conn, Redis::Stream *stream_db) {
+    LOG(INFO) << "Blocking read";
     if (!with_count_) {
       with_count_ = true;
       count_ = blocked_default_count_;
@@ -6060,6 +6063,7 @@ class CommandXRead : public Commander {
     conn_ = conn;
 
     svr_->BlockOnStreams(streams_, ids_, conn_);
+    LOG(INFO) << "Blocked on stream(s)";
 
     auto bev = conn->GetBufferEvent();
     bufferevent_setcb(bev, nullptr, WriteCB, EventCB, this);
@@ -6082,6 +6086,7 @@ class CommandXRead : public Commander {
   }
 
   static void WriteCB(bufferevent *bev, void *ctx) {
+    LOG(INFO) << "Write callback";
     auto command = reinterpret_cast<CommandXRead *>(ctx);
 
     if (command->timer_ != nullptr) {
@@ -6094,6 +6099,7 @@ class CommandXRead : public Commander {
                       command->conn_);
     bufferevent_enable(bev, EV_READ);
 
+    LOG(INFO) << "Reading from the storage";
     Redis::Stream stream_db(command->svr_->storage_, command->conn_->GetNamespace());
 
     std::vector<StreamReadResult> results;
@@ -6156,6 +6162,7 @@ class CommandXRead : public Commander {
         event_free(command->timer_);
         command->timer_ = nullptr;
       }
+      LOG(INFO) << "Unblocking by callback";
       command->unblockAll();
     }
     Redis::Connection::OnEvent(bev, events, command->conn_);
@@ -6169,6 +6176,7 @@ class CommandXRead : public Commander {
     event_free(command->timer_);
     command->timer_ = nullptr;
 
+    LOG(INFO) << "Unblocking on timer";
     command->unblockAll();
 
     auto bev = command->conn_->GetBufferEvent();

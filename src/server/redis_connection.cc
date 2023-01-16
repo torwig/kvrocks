@@ -293,6 +293,11 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
     auto cmd_tokens = to_process_cmds->front();
     to_process_cmds->pop_front();
 
+    LOG(INFO) << "Executing: ";
+    for (auto &c : cmd_tokens) {
+      LOG(INFO) << c;
+    }
+
     if (IsFlagEnabled(Redis::Connection::kCloseAfterReply) && !IsFlagEnabled(Connection::kMultiExec)) break;
 
     auto s = svr_->LookupAndCreateCommand(cmd_tokens.front(), &current_cmd_);
@@ -301,6 +306,8 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
       Reply(Redis::Error("ERR unknown command " + cmd_tokens.front()));
       continue;
     }
+
+    LOG(INFO) << "Command found and created";
 
     if (GetNamespace().empty()) {
       if (!password.empty() && Util::ToLower(cmd_tokens.front()) != "auth" &&
@@ -313,6 +320,8 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
         SetNamespace(kDefaultNamespace);
       }
     }
+
+    LOG(INFO) << "Auth checked";
 
     const auto attributes = current_cmd_->GetAttributes();
     auto cmd_name = attributes->name;
@@ -341,6 +350,8 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
       concurrency = svr_->WorkConcurrencyGuard();
     }
 
+    LOG(INFO) << "Concurrency or exclusivity evaluated";
+
     if (cmd_name == "eval_ro" || cmd_name == "evalsha_ro") {
       // if executing read only lua script commands, set current
       // connection.
@@ -352,6 +363,7 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
       if (IsFlagEnabled(Connection::kMultiExec)) multi_error_ = true;
       continue;
     }
+
     int arity = attributes->arity;
     int tokens = static_cast<int>(cmd_tokens.size());
     if ((arity > 0 && tokens != arity) || (arity < 0 && tokens < -arity)) {
@@ -359,13 +371,19 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
       Reply(Redis::Error("ERR wrong number of arguments"));
       continue;
     }
+
+    LOG(INFO) << "Arity checked";
+
     current_cmd_->SetArgs(cmd_tokens);
+
     s = current_cmd_->Parse();
     if (!s.IsOK()) {
       if (IsFlagEnabled(Connection::kMultiExec)) multi_error_ = true;
       Reply(Redis::Error("ERR " + s.Msg()));
       continue;
     }
+
+    LOG(INFO) << "Command parsed";
 
     if (IsFlagEnabled(Connection::kMultiExec) && attributes->is_no_multi()) {
       std::string no_multi_err = "Err Can't execute " + attributes->name + " in MULTI";
@@ -394,6 +412,7 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
       Reply(Redis::Error("READONLY You can't write against a read only slave."));
       continue;
     }
+
     if (!config->slave_serve_stale_data && svr_->IsSlave() && cmd_name != "info" && cmd_name != "slaveof" &&
         svr_->GetReplicationState() != kReplConnected) {
       Reply(
@@ -406,12 +425,15 @@ void Connection::ExecuteCommands(std::deque<CommandTokens> *to_process_cmds) {
     svr_->stats_.IncrCalls(cmd_name);
     auto start = std::chrono::high_resolution_clock::now();
     bool is_profiling = isProfilingEnabled(cmd_name);
+    LOG(INFO) << "Executing command";
     s = current_cmd_->Execute(svr_, this, &reply);
+    LOG(INFO) << "Command executed";
     auto end = std::chrono::high_resolution_clock::now();
     uint64_t duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     if (is_profiling) recordProfilingSampleIfNeed(cmd_name, duration);
     svr_->SlowlogPushEntryIfNeeded(&cmd_tokens, duration);
     svr_->stats_.IncrLatency(static_cast<uint64_t>(duration), cmd_name);
+    LOG(INFO) << "Feed monitors";
     svr_->FeedMonitorConns(this, cmd_tokens);
 
     // Break the execution loop when occurring the blocking command like BLPOP or BRPOP,
