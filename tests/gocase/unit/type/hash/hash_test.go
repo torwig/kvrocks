@@ -769,5 +769,67 @@ func TestHash(t *testing.T) {
 
 			require.NoError(t, rdb.Del(ctx, "test-hash-1").Err())
 		})
+		
+		t.Run("Test rare bug with large value after compaction", func(t *testing.T) {
+		
+			testKey := "test-hash-1"
+			require.NoError(t, rdb.Del(ctx, testKey).Err())
+
+			src := rand.NewSource(time.Now().UnixNano())
+			dd := make([]byte, 5000)
+			for i := 1; i <= 50; i++ {
+			for j := range dd {
+			  dd[j] = byte(src.Int63())
+			}
+			key := util.RandString(10, 20, util.Alpha)
+			require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
+			}
+
+			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
+			require.Equal(t, 50, len(rdb.HGetAll(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
+
+			require.NoError(t, rdb.Do(ctx, "COMPACT").Err())
+
+			time.Sleep(10 * time.Second)
+
+			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
+			require.Equal(t, 50, len(rdb.HGetAll(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
+		})
+		
+		t.Run("Test rare bug with large value with parralel compaction process", func(t *testing.T) {
+		
+			testKey := "test-hash-1"
+			require.NoError(t, rdb.Del(ctx, testKey).Err())
+
+			src := rand.NewSource(time.Now().UnixNano())
+			dd := make([]byte, 5000)
+			for i := 1; i <= 50; i++ {
+			for j := range dd {
+			  dd[j] = byte(src.Int63())
+			}
+			key := util.RandString(10, 20, util.Alpha)
+			require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
+			}
+
+			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
+			require.Equal(t, 50, len(rdb.HGetAll(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
+
+			require.NoError(t, rdb.Do(ctx, "COMPACT").Err())
+
+			time.Sleep(10 * time.Milliseconds)
+
+			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
+			require.Equal(t, 50, len(rdb.HGetAll(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
+			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
+		})
+		
+		
 	}
 }
