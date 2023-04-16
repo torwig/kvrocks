@@ -28,7 +28,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"math/rand"
+	"math"
 
 	"github.com/apache/incubator-kvrocks/tests/gocase/util"
 	"github.com/stretchr/testify/require"
