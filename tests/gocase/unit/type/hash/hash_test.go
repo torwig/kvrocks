@@ -23,12 +23,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
-	"math/rand"
 
 	"github.com/apache/incubator-kvrocks/tests/gocase/util"
 	"github.com/stretchr/testify/require"
@@ -770,7 +770,7 @@ func TestHash(t *testing.T) {
 
 			require.NoError(t, rdb.Del(ctx, "test-hash-1").Err())
 		})
-		
+
 		t.Run("Test rare bug with large value after compaction", func(t *testing.T) {
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
@@ -778,11 +778,11 @@ func TestHash(t *testing.T) {
 			src := rand.NewSource(time.Now().UnixNano())
 			dd := make([]byte, 5000)
 			for i := 1; i <= 50; i++ {
-			for j := range dd {
-			  dd[j] = byte(src.Int63())
-			}
-			key := util.RandString(10, 20, util.Alpha)
-			require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
+				for j := range dd {
+					dd[j] = byte(src.Int63())
+				}
+				key := util.RandString(10, 20, util.Alpha)
+				require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
 			}
 
 			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
@@ -799,7 +799,7 @@ func TestHash(t *testing.T) {
 			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
 			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
 		})
-		
+
 		t.Run("Test rare bug with large value with parralel compaction process", func(t *testing.T) {
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
@@ -807,11 +807,11 @@ func TestHash(t *testing.T) {
 			src := rand.NewSource(time.Now().UnixNano())
 			dd := make([]byte, 5000)
 			for i := 1; i <= 50; i++ {
-			for j := range dd {
-			  dd[j] = byte(src.Int63())
-			}
-			key := util.RandString(10, 20, util.Alpha)
-			require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
+				for j := range dd {
+					dd[j] = byte(src.Int63())
+				}
+				key := util.RandString(10, 20, util.Alpha)
+				require.NoError(t, rdb.HSet(ctx, testKey, key, string(dd)).Err())
 			}
 
 			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
@@ -828,7 +828,6 @@ func TestHash(t *testing.T) {
 			require.Equal(t, 50, len(rdb.HKeys(ctx, testKey).Val()))
 			require.Equal(t, 50, len(rdb.HVals(ctx, testKey).Val()))
 		})
-		
-		
+
 	}
 }
