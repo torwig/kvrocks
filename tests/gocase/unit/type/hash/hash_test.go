@@ -772,7 +772,6 @@ func TestHash(t *testing.T) {
 		})
 		
 		t.Run("Test rare bug with large value after compaction", func(t *testing.T) {
-		
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
 
@@ -802,7 +801,6 @@ func TestHash(t *testing.T) {
 		})
 		
 		t.Run("Test rare bug with large value with parralel compaction process", func(t *testing.T) {
-		
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
 
