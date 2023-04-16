@@ -28,6 +28,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"math/rand"
 
 	"github.com/apache/incubator-kvrocks/tests/gocase/util"
 	"github.com/stretchr/testify/require"
@@ -822,7 +823,7 @@ func TestHash(t *testing.T) {
 
 			require.NoError(t, rdb.Do(ctx, "COMPACT").Err())
 
-			time.Sleep(10 * time.Milliseconds)
+			time.Sleep(10 * time.Millisecond)
 
 			require.Equal(t, int64(50), rdb.HLen(ctx, testKey).Val())
 			require.Equal(t, 50, len(rdb.HGetAll(ctx, testKey).Val()))
