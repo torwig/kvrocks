@@ -775,7 +775,7 @@ func TestHash(t *testing.T) {
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
 
-			src := rand.NewSource(time.Now().UnixNano())
+			src := math.rand.NewSource(time.Now().UnixNano())
 			dd := make([]byte, 5000)
 			for i := 1; i <= 50; i++ {
 			for j := range dd {
@@ -804,7 +804,7 @@ func TestHash(t *testing.T) {
 			testKey := "test-hash-1"
 			require.NoError(t, rdb.Del(ctx, testKey).Err())
 
-			src := rand.NewSource(time.Now().UnixNano())
+			src := math.rand.NewSource(time.Now().UnixNano())
 			dd := make([]byte, 5000)
 			for i := 1; i <= 50; i++ {
 			for j := range dd {
