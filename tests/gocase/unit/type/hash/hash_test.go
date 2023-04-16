@@ -763,12 +763,13 @@ func TestHash(t *testing.T) {
 		})
 
 		t.Run("HrangeByLex - field with empty string as a value", func(t *testing.T) {
-			require.NoError(t, rdb.HSet(ctx, "test-hash-1", "field1", "some-value").Err())
-			require.NoError(t, rdb.HSet(ctx, "test-hash-1", "field2", "").Err())
+			testKey := "test-hash-1"
+			require.NoError(t, rdb.Del(ctx, testKey).Err())
 
-			require.Equal(t, []interface{}{"field1", "some-value", "field2", ""}, rdb.Do(ctx, "HrangeByLex", "test-hash-1", "[a", "[z").Val())
+			require.NoError(t, rdb.HSet(ctx, testKey, "field1", "some-value").Err())
+			require.NoError(t, rdb.HSet(ctx, testKey, "field2", "").Err())
 
-			require.NoError(t, rdb.Del(ctx, "test-hash-1").Err())
+			require.Equal(t, []interface{}{"field1", "some-value", "field2", ""}, rdb.Do(ctx, "HrangeByLex", testKey, "[a", "[z").Val())
 		})
 
 		t.Run("Test rare bug with large value after compaction", func(t *testing.T) {
