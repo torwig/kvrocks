@@ -136,7 +136,7 @@ find_package(Threads REQUIRED)
 
 list(APPEND EXTERNAL_LIBS glog)
 list(APPEND EXTERNAL_LIBS snappy)
-list(APPEND EXTERNAL_LIBS rocksdb_with_headers)
+list(APPEND EXTERNAL_LIBS speedb_with_headers)
 list(APPEND EXTERNAL_LIBS event_with_headers)
 list(APPEND EXTERNAL_LIBS lz4)
 list(APPEND EXTERNAL_LIBS zstd)

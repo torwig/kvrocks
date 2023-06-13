@@ -25,16 +25,16 @@ endif()
 
 include(cmake/utils.cmake)
 
-FetchContent_DeclareGitHubWithMirror(rocksdb
-  facebook/rocksdb v8.1.1
-  MD5=b362246096dbd15839749da37d3ccda9
+FetchContent_DeclareGitHubWithMirror(speedb
+        speedb-io/speedb 1d934066efdd3c0608cc305b22c70733bf079483
+        MD5=e5bd1625363ae0a6fb5f4d465f1db342
 )
 
 FetchContent_GetProperties(jemalloc)
 FetchContent_GetProperties(snappy)
 FetchContent_GetProperties(tbb)
 
-FetchContent_MakeAvailableWithArgs(rocksdb
+FetchContent_MakeAvailableWithArgs(speedb
   CMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake/modules # to locate FindJeMalloc.cmake
   Snappy_DIR=${PROJECT_SOURCE_DIR}/cmake/modules # to locate SnappyConfig.cmake
   FAIL_ON_WARNINGS=OFF
@@ -55,6 +55,6 @@ FetchContent_MakeAvailableWithArgs(rocksdb
   PORTABLE=${PORTABLE}
 )
 
-add_library(rocksdb_with_headers INTERFACE)
-target_include_directories(rocksdb_with_headers INTERFACE ${rocksdb_SOURCE_DIR}/include)
-target_link_libraries(rocksdb_with_headers INTERFACE rocksdb)
+add_library(speedb_with_headers INTERFACE)
+target_include_directories(speedb_with_headers INTERFACE ${speedb_SOURCE_DIR}/include)
+target_link_libraries(speedb_with_headers INTERFACE speedb)
