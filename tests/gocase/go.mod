@@ -1,13 +1,13 @@
 module github.com/apache/kvrocks/tests/gocase
 
-go 1.19
+go 1.22
 
 require (
-	github.com/redis/go-redis/v9 v9.3.1
-	github.com/shirou/gopsutil/v3 v3.22.9
-	github.com/stretchr/testify v1.8.0
-	golang.org/x/exp v0.0.0-20220929160808-de9c53c655b9
-	modernc.org/mathutil v1.5.0
+	github.com/redis/go-redis/v9 v9.5.2
+	github.com/shirou/gopsutil/v3 v3.24.5
+	github.com/stretchr/testify v1.9.0
+	golang.org/x/exp v0.0.0-20240707233637-46b078467d37
+	modernc.org/mathutil v1.6.0
 )
 
 require (
@@ -19,9 +19,10 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/tklauser/go-sysconf v0.3.11 // indirect
-	github.com/tklauser/numcpus v0.6.0 // indirect
-	github.com/yusufpapurcu/wmi v1.2.3 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	github.com/shoenig/go-m1cpu v0.1.6 // indirect
+	github.com/tklauser/go-sysconf v0.3.12 // indirect
+	github.com/tklauser/numcpus v0.6.1 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
