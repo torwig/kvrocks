@@ -1,9 +1,9 @@
 module github.com/apache/kvrocks/tests/gocase
 
-go 1.19
+go 1.22
 
 require (
-	github.com/redis/go-redis/v9 v9.4.0
+	github.com/redis/go-redis/v9 v9.5.2
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37
