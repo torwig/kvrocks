@@ -1374,7 +1374,7 @@ func basicTests(t *testing.T, rdb *redis.Client, ctx context.Context, enabledRES
 		// ZRANDMEMBER zset len(members) WITHSCORES
 		res := rdb.ZRandMemberWithScores(ctx, "zset", len(members)).Val()
 		sort.Slice(res, func(i, j int) bool {
-			return res[i].Member.val < res[j].Member.val
+			return res[i].Member.Val() < res[j].Member.Val()
 		})
 		require.Equal(t, z, res)
 
