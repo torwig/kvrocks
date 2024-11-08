@@ -333,7 +333,7 @@ static StatusOr<std::unique_ptr<kqir::Node>> ParseRediSearchQuery(const std::vec
 
   kqir::ParamMap param_map;
   while (parser.Good()) {
-    if (parser.EatEqICase("RETURNS")) {
+    if (parser.EatEqICase("RETURN")) {
       auto count = GET_OR_RET(parser.TakeInt<size_t>());
 
       for (size_t i = 0; i < count; ++i) {
@@ -498,7 +498,7 @@ class CommandFTTagVals : public Commander {
   Status Execute(engine::Context &ctx, Server *srv, Connection *conn, std::string *output) override {
     const auto &index_name = args_[1];
     const auto &tag_field_name = args_[2];
-    auto field_values = GET_OR_RET(srv->index_mgr.FieldValues(ctx, index_name, tag_field_name, conn->GetNamespace()));
+    auto field_values = GET_OR_RET(srv->index_mgr.TagValues(ctx, index_name, tag_field_name, conn->GetNamespace()));
 
     std::vector<std::string> result_vec(field_values.begin(), field_values.end());
 
